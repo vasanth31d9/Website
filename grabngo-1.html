@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grab N Go - Order Food</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        .gradient-text {
+            background: linear-gradient(90deg, #2563eb, #10b981);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
+        }
+        .gradient-bg {
+            background: linear-gradient(90deg, #2563eb, #10b981);
+        }
+        .gradient-bg:hover {
+            background: linear-gradient(90deg, #1d4ed8, #059669);
+        }
+        .cart-scroll::-webkit-scrollbar {
+            width: 8px;
+        }
+        .cart-scroll::-webkit-scrollbar-track {
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+        .cart-scroll::-webkit-scrollbar-thumb {
+            background: #94a3b8;
+            border-radius: 10px;
+        }
+        .cart-scroll::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+        .login-enter-active {
+            animation: slideIn 0.5s ease-out forwards;
+        }
+        .login-leave-active {
+            animation: slideOut 0.5s ease-in forwards;
+        }
+        @keyframes slideIn {
+            from { transform: translateY(-100%); }
+            to { transform: translateY(0); }
+        }
+        @keyframes slideOut {
+            from { transform: translateY(0); }
+            to { transform: translateY(-100%); }
+        }
+        .flip-card-container {
+            perspective: 1000px;
+            width: 100%;
+        }
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        .flip-card-container.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .flip-card-back {
+            transform: rotateY(180deg);
+        }
+        .input-group {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 1rem 0.5rem;
+            background: none;
+            border: none;
+            border-bottom: 2px solid #e2e8f0;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .input-group input:focus {
+            border-color: #2563eb;
+        }
+        .input-group label {
+            position: absolute;
+            top: 1rem;
+            left: 0.5rem;
+            color: #94a3b8;
+            transition: 0.3s ease-out;
+            pointer-events: none;
+        }
+        .input-group input:focus + label,
+        .input-group input:not(:placeholder-shown) + label {
+            top: -1.25rem;
+            font-size: 0.8rem;
+            color: #2563eb;
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <!-- Login/Signup Page -->
+    <div id="auth-page" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900 login-enter-active">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-8 sm:p-12 text-center relative overflow-hidden h-[450px]">
+            <div id="flip-container" class="flip-card-container h-full">
+                <div class="flip-card-inner h-full">
+                    <!-- Login Form (Front) -->
+                    <div class="flip-card-front flex flex-col items-center justify-center">
+                        <h2 class="text-3xl font-extrabold mb-2">Welcome to Grab N Go</h2>
+                        <p class="text-slate-600 mb-6">Log in to your account.</p>
+                        <form id="login-form" class="w-full">
+                            <div class="input-group">
+                                <input type="email" id="login-email" required placeholder=" ">
+                                <label for="login-email">Email</label>
+                            </div>
+                            <div class="input-group">
+                                <input type="password" id="login-password" required placeholder=" ">
+                                <label for="login-password">Password</label>
+                            </div>
+                            <button type="submit" class="w-full px-6 py-4 text-lg font-semibold text-white gradient-bg rounded-lg shadow-lg">
+                                Log In
+                            </button>
+                        </form>
+                        <p class="mt-4 text-sm text-slate-500">Don't have an account? <a href="#" id="show-signup" class="font-bold gradient-text">Sign Up</a></p>
+                    </div>
+
+                    <!-- Signup Form (Back) -->
+                    <div class="flip-card-back flex flex-col items-center justify-center">
+                        <h2 class="text-3xl font-extrabold mb-2">Join Us!</h2>
+                        <p class="text-slate-600 mb-6">Create your account to get started.</p>
+                        <form id="signup-form" class="w-full">
+                            <div class="input-group">
+                                <input type="text" id="signup-username" required placeholder=" ">
+                                <label for="signup-username">Username</label>
+                            </div>
+                            <div class="input-group">
+                                <input type="email" id="signup-email" required placeholder=" ">
+                                <label for="signup-email">Email</label>
+                            </div>
+                            <div class="input-group">
+                                <input type="password" id="signup-password" required placeholder=" ">
+                                <label for="signup-password">Password</label>
+                            </div>
+                            <button type="submit" class="w-full px-6 py-4 text-lg font-semibold text-white gradient-bg rounded-lg shadow-lg">
+                                Sign Up
+                            </button>
+                        </form>
+                        <p class="mt-4 text-sm text-slate-500">Already have an account? <a href="#" id="show-login" class="font-bold gradient-text">Log In</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="loading-spinner" class="absolute w-12 h-12 border-4 border-t-4 border-white rounded-full animate-spin hidden"></div>
+        <div id="error-message" class="absolute bottom-8 p-4 bg-red-500 text-white rounded-lg shadow-lg z-50 hidden"></div>
+    </div>
+    
+    <main id="main-content" class="pt-20 hidden">
+        <!-- Header -->
+        <header class="bg-white/80 backdrop-blur-lg fixed w-full z-30 top-0 border-b border-slate-200">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-20">
+                    <!-- Logo -->
+                    <a href="#" class="flex items-center space-x-2">
+                        <div class="h-10 w-10 flex items-center justify-center rounded-lg gradient-bg">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        </div>
+                        <span class="text-2xl font-extrabold text-slate-800">Grab N Go</span>
+                    </a>
+
+                    <!-- User Actions -->
+                    <div class="flex items-center space-x-4">
+                        <span id="welcome-message" class="text-sm font-semibold text-slate-500 hidden"></span>
+                        
+                        <!-- Profile Button -->
+                        <button id="profile-button" class="flex items-center justify-center w-10 h-10 rounded-full border border-slate-300 hover:bg-slate-100 transition">
+                            <svg class="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                        </button>
+
+                        <!-- Cart Button -->
+                        <button id="cart-button" class="flex items-center space-x-2 px-4 py-2 rounded-lg border border-slate-300 hover:bg-slate-100 transition">
+                            <svg class="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                            <span class="font-semibold">My Cart</span>
+                            <span id="cart-count" class="gradient-bg text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">0</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Hero Section -->
+        <section class="py-16 md:py-24 bg-white">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight text-slate-900 mb-4">
+                    Order Your Favourites, <span class="gradient-text">Skip the Line.</span>
+                </h1>
+                <p class="max-w-2xl mx-auto text-lg md:text-xl text-slate-600 mb-8">
+                    Welcome to the fastest way to get your canteen food. Browse the menu, place your order, and we'll let you know when it's ready for pickup.
+                </p>
+                <a href="#menu" class="inline-block px-8 py-3 text-lg font-semibold text-white gradient-bg rounded-lg shadow-lg">
+                    ORDER NOW
+                </a>
+            </div>
+        </section>
+
+        <!-- Menu Section -->
+        <section id="menu" class="py-16">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <!-- Morning Break -->
+                <div class="mb-16">
+                    <div class="mb-8">
+                        <h2 class="text-3xl md:text-4xl font-extrabold text-slate-900">Morning Break</h2>
+                        <p class="mt-2 text-lg text-slate-500">Available from 11:10 AM to 11:30 AM</p>
+                    </div>
+                    <div id="morning-menu-items" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                        <!-- Morning menu items will be injected here -->
+                    </div>
+                </div>
+                <!-- Afternoon Break -->
+                <div class="mb-16">
+                    <div class="mb-8">
+                        <h2 class="text-3xl md:text-4xl font-extrabold text-slate-900">Afternoon Break</h2>
+                        <p class="mt-2 text-lg text-slate-500">Available from 1:10 PM to 2:00 PM</p>
+                    </div>
+                    <div id="afternoon-menu-items" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                        <!-- Afternoon menu items will be injected here -->
+                    </div>
+                </div>
+                <!-- Evening Snacks -->
+                <div>
+                    <div class="mb-8">
+                        <h2 class="text-3xl md:text-4xl font-extrabold text-slate-900">Evening Snacks</h2>
+                        <p class="mt-2 text-lg text-slate-500">Available from 4:30 PM to 5:30 PM</p>
+                    </div>
+                    <div id="evening-menu-items" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                        <!-- Evening menu items will be injected here -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- How it works Section -->
+        <section class="py-16 bg-white">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-extrabold text-slate-900">How It Works</h2>
+                    <p class="mt-2 text-lg text-slate-500">Just 3 simple steps to enjoy your meal.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
+                    <div class="flex flex-col items-center">
+                        <div class="flex items-center justify-center h-20 w-20 rounded-full gradient-bg text-white text-3xl font-bold mb-4">1</div>
+                        <h3 class="text-xl font-bold mb-2">Browse & Order</h3>
+                        <p class="text-slate-500">Pick your favorite items from the menu and add them to your cart.</p>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="flex items-center justify-center h-20 w-20 rounded-full gradient-bg text-white text-3xl font-bold mb-4">2</div>
+                        <h3 class="text-xl font-bold mb-2">Checkout & Pay</h3>
+                        <p class="text-slate-500">Review your order, select a pickup time, and pay securely online.</p>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <div class="flex items-center justify-center h-20 w-20 rounded-full gradient-bg text-white text-3xl font-bold mb-4">3</div>
+                        <h3 class="text-xl font-bold mb-2">Scan QR & Collect</h3>
+                        <p class="text-slate-500">Show your order QR code at the counter to collect your food instantly.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 hidden">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 text-center">
+            <p>&copy; 2025 Grab N Go. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+
+    <!-- Cart Modal -->
+    <div id="cart-modal" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden" aria-labelledby="cart-title" role="dialog" aria-modal="true">
+        <div class="absolute inset-0" id="cart-overlay"></div>
+        <div id="cart-panel" class="absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-xl flex flex-col transform translate-x-full transition-transform duration-300 ease-in-out">
+            <!-- Cart Header -->
+            <div class="flex items-center justify-between p-6 border-b border-slate-200">
+                <h2 id="cart-title" class="text-2xl font-extrabold text-slate-800">Your Order</h2>
+                <button id="close-cart-button" class="text-slate-500 hover:text-slate-800">&times;</button>
+            </div>
+            <!-- Cart Body -->
+            <div id="cart-body" class="flex-grow p-6 overflow-y-auto cart-scroll">
+                <!-- Cart items will be injected here -->
+            </div>
+            <!-- Cart Footer -->
+            <div class="p-6 border-t border-slate-200 bg-slate-50">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-lg font-semibold text-slate-600">Subtotal:</span>
+                    <span id="cart-subtotal" class="text-xl font-extrabold text-slate-800">₹0.00</span>
+                </div>
+                <button id="checkout-button" class="w-full px-6 py-4 text-lg font-semibold text-white gradient-bg rounded-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                    Proceed to Checkout
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div id="profile-modal" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden" aria-labelledby="profile-title" role="dialog" aria-modal="true">
+        <div class="absolute inset-0" id="profile-overlay"></div>
+        <div id="profile-panel" class="absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-xl flex flex-col transform translate-x-full transition-transform duration-300 ease-in-out">
+            <!-- Profile Header -->
+            <div class="flex items-center justify-between p-6 border-b border-slate-200">
+                <h2 id="profile-title" class="text-2xl font-extrabold text-slate-800">My Profile</h2>
+                <button id="close-profile-button" class="text-slate-500 hover:text-slate-800">&times;</button>
+            </div>
+            <!-- Profile Body -->
+            <div id="profile-body" class="flex-grow p-6 overflow-y-auto cart-scroll">
+                <div class="mb-8 p-4 bg-slate-100 rounded-lg text-center">
+                    <div class="w-20 h-20 mx-auto mb-2 rounded-full bg-slate-300 flex items-center justify-center text-white text-3xl font-bold">
+                        <svg class="w-12 h-12" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path></svg>
+                    </div>
+                    <p id="profile-username" class="text-xl font-bold"></p>
+                    <p id="profile-email" class="text-sm text-slate-500"></p>
+                </div>
+
+                <h3 class="text-xl font-bold mb-4">Previous Orders</h3>
+                <div id="previous-orders-list">
+                    <!-- Previous orders will be injected here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Checkout Modal -->
+    <div id="checkout-modal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-8">
+            <h2 class="text-2xl font-extrabold mb-6 text-center">Confirm Order</h2>
+            <div class="space-y-4">
+                <label for="pickup-time" class="block font-semibold">Select Pickup Time:</label>
+                <input type="time" id="pickup-time" name="pickup-time" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" min="09:00" max="17:00" required>
+            </div>
+            <div class="mt-8 flex flex-col gap-4">
+                <button id="place-order-button" class="w-full px-6 py-3 text-lg font-semibold text-white gradient-bg rounded-lg">Place Order</button>
+                <button id="cancel-checkout-button" class="w-full px-6 py-3 text-lg font-semibold text-slate-600 bg-slate-200 hover:bg-slate-300 rounded-lg">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmation-modal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-8 text-center">
+            <div class="w-20 h-20 mx-auto mb-6 flex items-center justify-center rounded-full bg-green-100">
+                <svg class="w-12 h-12 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+            <h2 class="text-2xl font-extrabold mb-4">Order Placed!</h2>
+            <p class="text-slate-600 mb-6">Your order is confirmed. Show this QR code at the counter for pickup at your selected time.</p>
+            <div class="bg-slate-200 p-4 rounded-lg flex items-center justify-center mb-6">
+                <!-- Placeholder for QR Code -->
+                <svg class="w-40 h-40" viewBox="0 0 256 256"><rect width="256" height="256" fill="#fff"/><path fill="#000" d="M144 72v16h16V72h-16Zm-24-24v16h16V48h-16Zm48 48V80h16v16h-16ZM48 48v64h64V48H48Zm48 48H64V64h32v32Zm-48-4v16h16V92H48Zm120-4v16h16V92h-16Zm48-44v16h16V48h-16Zm-24 24v16h16V72h-16Zm-72 96v16h16v-16h-16Zm-24-24v16h16v-16h-16Zm-24-24v16h16v-16H48Zm24-24v16h16v-16H72Zm-24 48v16h16v-16H48Zm0 24v16h16v-16H48Zm24 0v16h16v-16H72Zm24-24v16h16v-16H96Zm24-48v16h16v-16h-16Zm24 0v16h16v-16h-16Zm24 24v16h16v-16h-16Zm0 24v16h16v-16h-16Zm-24 24v16h16v-16h-16Zm24 0v16h16v-16h-16Zm24-24v16h16v-16h-16Zm0 24v16h16v-16h-16Zm-48 24v16h16v-16h-16Zm24 0v16h16v-16h-16Zm-72-48v16h16v-16H96Zm-48 0v16h16v-16H48Zm192 120a40 40 0 1 1-40-40a40 40 0 0 1 40 40Z"/></svg>
+            </div>
+            <button id="close-confirmation-button" class="w-full px-6 py-3 text-lg font-semibold text-slate-600 bg-slate-200 hover:bg-slate-300 rounded-lg">Close</button>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // UI Elements
+            const authPage = document.getElementById('auth-page');
+            const mainContent = document.getElementById('main-content');
+            const welcomeMessage = document.getElementById('welcome-message');
+            const loginForm = document.getElementById('login-form');
+            const signupForm = document.getElementById('signup-form');
+            const showSignupLink = document.getElementById('show-signup');
+            const showLoginLink = document.getElementById('show-login');
+            const flipContainer = document.getElementById('flip-container');
+            const loadingSpinner = document.getElementById('loading-spinner');
+            const errorMessageDiv = document.getElementById('error-message');
+            const cartButton = document.getElementById('cart-button');
+            const profileButton = document.getElementById('profile-button');
+
+            // Form inputs
+            const loginEmailInput = document.getElementById('login-email');
+            const loginPasswordInput = document.getElementById('login-password');
+            const signupUsernameInput = document.getElementById('signup-username');
+            const signupEmailInput = document.getElementById('signup-email');
+            const signupPasswordInput = document.getElementById('signup-password');
+
+            // Modals
+            const cartModal = document.getElementById('cart-modal');
+            const cartOverlay = document.getElementById('cart-overlay');
+            const closeCartButton = document.getElementById('close-cart-button');
+            const cartPanel = document.getElementById('cart-panel');
+            const cartCount = document.getElementById('cart-count');
+            const cartBody = document.getElementById('cart-body');
+            const cartSubtotal = document.getElementById('cart-subtotal');
+            const checkoutButton = document.getElementById('checkout-button');
+            const checkoutModal = document.getElementById('checkout-modal');
+            const cancelCheckoutButton = document.getElementById('cancel-checkout-button');
+            const placeOrderButton = document.getElementById('place-order-button');
+            const pickupTimeInput = document.getElementById('pickup-time');
+            const confirmationModal = document.getElementById('confirmation-modal');
+            const closeConfirmationButton = document.getElementById('close-confirmation-button');
+            const profileModal = document.getElementById('profile-modal');
+            const closeProfileButton = document.getElementById('close-profile-button');
+            const profilePanel = document.getElementById('profile-panel');
+            const profileUsername = document.getElementById('profile-username');
+            const profileEmail = document.getElementById('profile-email');
+            const previousOrdersList = document.getElementById('previous-orders-list');
+
+            const menuContainer = document.getElementById('menu');
+
+            let cart = [];
+            let currentUser = {
+                username: '',
+                email: ''
+            };
+
+            // Mock data for previous orders
+            const previousOrders = [
+                { id: 'ORD-20240901-001', date: '2024-09-01', total: 110.00, items: ['Tea', 'Samosa', 'Dosa'] },
+                { id: 'ORD-20240828-002', date: '2024-08-28', total: 145.00, items: ['Gobi Rice', 'Poori'] },
+                { id: 'ORD-20240825-003', date: '2024-08-25', total: 50.00, items: ['Parota'] },
+            ];
+
+            // Menu data
+            const menu = [
+                { id: 1, name: 'Tea', category: 'Morning Break', price: 10, image: 'https://placehold.co/400x300/e2e8f0/334155?text=Tea' },
+                { id: 2, name: 'Samosa', category: 'Morning Break', price: 20, image: 'https://placehold.co/400x300/e2e8f0/334155?text=Samosa' },
+                { id: 3, name: 'Dosa', category: 'Morning Break', price: 40, image: 'https://placehold.co/400x300/e2e8f0/334155?text=Dosa' },
+                { id: 4, name: 'Masala Dosa', category: 'Morning Break', price: 50, image: 'https://placehold.co/400x300/e2e8f0/334155?text=Masala+Dosa' },
+                { id: 5, name: 'Egg Dosa', category: 'Morning Break', price: 60, image: 'https://placehold.co/400x300/e2e8f0/334155?text=Egg+Dosa' },
+                { id: 6, name: 'Poori', category: 'Morning Break', price: 40, image: 'https://placehold.co/400x300/e2e8f0/334155?text=Poori' },
+                { id: 7, name: 'Egg Rice', category: 'Afternoon Break', price: 65, image: 'https://placehold.co/400x300/e2e8f0/334155?text=Egg+Rice' },
+                { id: 8, name: 'Gobi Rice', category: 'Afternoon Break', price: 65, image: 'https://placehold.co/400x300/e2e8f0/334155?text=Gobi+Rice' },
+                { id: 9, name: 'Parota', category: 'Afternoon Break', price: 50, image: 'https://placehold.co/400x300/e2e8f0/334155?text=Parota' },
+                { id: 10, name: 'Chapati', category: 'Afternoon Break', price: 50, image: 'https://placehold.co/400x300/e2e8f0/334155?text=Chapati' },
+                { id: 11, name: 'Chicken Fried Rice', category: 'Afternoon Break', price: 90, image: 'https://placehold.co/400x300/e2e8f0/334155?text=Chicken+Rice' },
+                { id: 12, name: 'Tea', category: 'Evening Snacks', price: 10, image: 'https://placehold.co/400x300/e2e8f0/334155?text=Tea' },
+                { id: 13, name: 'Gobi', category: 'Evening Snacks', price: 65, image: 'https://placehold.co/400x300/e2e8f0/334155?text=Gobi' },
+                { id: 14, name: 'Noodles', category: 'Evening Snacks', price: 65, image: 'https://placehold.co/400x300/e2e8f0/334155?text=Noodles' },
+                { id: 15, name: 'Gobi Noodles', category: 'Evening Snacks', price: 80, image: 'https://placehold.co/400x300/e2e8f0/334155?text=Gobi+Noodles' },
+            ];
+            
+            // Utility Functions
+            function showSpinner() { loadingSpinner.classList.remove('hidden'); }
+            function hideSpinner() { loadingSpinner.classList.add('hidden'); }
+            function showErrorMessage(message) {
+                errorMessageDiv.textContent = message;
+                errorMessageDiv.classList.remove('hidden');
+                setTimeout(() => errorMessageDiv.classList.add('hidden'), 5000);
+            }
+
+            // Function to simulate login/signup success
+            function handleAuthSuccess(username, email) {
+                currentUser.username = username;
+                currentUser.email = email;
+                profileUsername.textContent = username;
+                profileEmail.textContent = email;
+                welcomeMessage.textContent = `Welcome, ${username}!`;
+                welcomeMessage.classList.remove('hidden');
+                authPage.classList.remove('login-enter-active');
+                authPage.classList.add('login-leave-active');
+                setTimeout(() => {
+                    authPage.classList.add('hidden');
+                    mainContent.classList.remove('hidden');
+                }, 500);
+            }
+
+            // --- Mock Login & Signup Logic ---
+            loginForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const email = loginEmailInput.value;
+                const password = loginPasswordInput.value;
+                if (email && password) {
+                    // Simulate a successful login
+                    handleAuthSuccess(email.split('@')[0], email);
+                } else {
+                    showErrorMessage("Please enter both email and password.");
+                }
+            });
+
+            signupForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const username = signupUsernameInput.value;
+                const email = signupEmailInput.value;
+                const password = signupPasswordInput.value;
+                if (username && email && password) {
+                    // Simulate a successful signup
+                    handleAuthSuccess(username, email);
+                } else {
+                    showErrorMessage("Please fill out all fields.");
+                }
+            });
+
+            // Flip Card Animation
+            showSignupLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                flipContainer.classList.add('flipped');
+                errorMessageDiv.classList.add('hidden');
+            });
+
+            showLoginLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                flipContainer.classList.remove('flipped');
+                errorMessageDiv.classList.add('hidden');
+            });
+
+            // --- Render Menu ---
+            function renderMenu() {
+                const morningMenuContainer = document.getElementById('morning-menu-items');
+                const afternoonMenuContainer = document.getElementById('afternoon-menu-items');
+                const eveningMenuContainer = document.getElementById('evening-menu-items');
+                morningMenuContainer.innerHTML = '';
+                afternoonMenuContainer.innerHTML = '';
+                eveningMenuContainer.innerHTML = '';
+                menu.forEach(item => {
+                    const menuItem = document.createElement('div');
+                    menuItem.className = 'bg-white rounded-xl shadow-md overflow-hidden transform hover:scale-105 transition-transform duration-300';
+                    menuItem.innerHTML = `
+                        <img class="h-48 w-full object-cover" src="${item.image}" alt="${item.name}">
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold mb-1">${item.name}</h3>
+                            <div class="flex items-center justify-between">
+                                <span class="text-2xl font-extrabold">₹${item.price.toFixed(2)}</span>
+                                <button data-id="${item.id}" class="add-to-cart-btn px-4 py-2 text-sm font-semibold text-white gradient-bg rounded-lg shadow">Add to Cart</button>
+                            </div>
+                        </div>
+                    `;
+                    if (item.category === 'Morning Break') {
+                        morningMenuContainer.appendChild(menuItem);
+                    } else if (item.category === 'Afternoon Break') {
+                        afternoonMenuContainer.appendChild(menuItem);
+                    } else if (item.category === 'Evening Snacks') {
+                        eveningMenuContainer.appendChild(menuItem);
+                    }
+                });
+            }
+            
+            // --- Cart Logic ---
+            function addToCart(itemId) {
+                const existingItem = cart.find(item => item.id === itemId);
+                if (existingItem) {
+                    existingItem.quantity++;
+                } else {
+                    const itemToAdd = menu.find(item => item.id === itemId);
+                    cart.push({ ...itemToAdd, quantity: 1 });
+                }
+                updateCart();
+            }
+            function updateCart() {
+                renderCartItems();
+                updateCartCount();
+                updateSubtotal();
+                checkoutButton.disabled = cart.length === 0;
+            }
+            function renderCartItems() {
+                cartBody.innerHTML = '';
+                if (cart.length === 0) {
+                    cartBody.innerHTML = '<p class="text-slate-500 text-center py-8">Your cart is empty.</p>';
+                    return;
+                }
+                cart.forEach(item => {
+                    const cartItem = document.createElement('div');
+                    cartItem.className = 'flex items-center justify-between py-4 border-b border-slate-200';
+                    cartItem.innerHTML = `
+                        <div class="flex-grow">
+                            <p class="font-bold">${item.name}</p>
+                            <p class="text-sm text-slate-500">₹${item.price.toFixed(2)}</p>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <button data-id="${item.id}" class="quantity-decrease h-6 w-6 rounded-full bg-slate-200 text-slate-600">-</button>
+                            <span class="font-bold">${item.quantity}</span>
+                            <button data-id="${item.id}" class="quantity-increase h-6 w-6 rounded-full bg-slate-200 text-slate-600">+</button>
+                        </div>
+                        <span class="font-extrabold w-20 text-right">₹${(item.price * item.quantity).toFixed(2)}</span>
+                        <button data-id="${item.id}" class="remove-item ml-4 text-red-500 hover:text-red-700">&times;</button>
+                    `;
+                    cartBody.appendChild(cartItem);
+                });
+            }
+            function updateCartCount() {
+                const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+                cartCount.textContent = totalItems;
+            }
+            function updateSubtotal() {
+                const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                cartSubtotal.textContent = `₹${subtotal.toFixed(2)}`;
+            }
+            function adjustQuantity(itemId, amount) {
+                const cartItem = cart.find(item => item.id === itemId);
+                if (cartItem) {
+                    cartItem.quantity += amount;
+                    if (cartItem.quantity <= 0) {
+                        removeFromCart(itemId);
+                    } else {
+                        updateCart();
+                    }
+                }
+            }
+            function removeFromCart(itemId) {
+                cart = cart.filter(item => item.id !== itemId);
+                updateCart();
+            }
+
+            // --- Profile Logic ---
+            function renderPreviousOrders() {
+                previousOrdersList.innerHTML = '';
+                if (previousOrders.length === 0) {
+                    previousOrdersList.innerHTML = '<p class="text-slate-500 text-center py-8">No previous orders found.</p>';
+                    return;
+                }
+                previousOrders.forEach(order => {
+                    const orderItem = document.createElement('div');
+                    orderItem.className = 'bg-white rounded-lg p-4 mb-4 shadow-sm border border-slate-200';
+                    orderItem.innerHTML = `
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-sm font-bold text-slate-600">${order.id}</span>
+                            <span class="text-sm text-slate-500">${order.date}</span>
+                        </div>
+                        <div class="text-lg font-extrabold text-slate-800">₹${order.total.toFixed(2)}</div>
+                        <ul class="list-disc list-inside text-sm text-slate-500 mt-2">
+                            ${order.items.map(item => `<li>${item}</li>`).join('')}
+                        </ul>
+                    `;
+                    previousOrdersList.appendChild(orderItem);
+                });
+            }
+
+            // --- Modal Controls ---
+            function openCartModal() {
+                cartModal.classList.remove('hidden');
+                setTimeout(() => cartPanel.classList.remove('translate-x-full'), 10);
+            }
+            function closeCartModal() {
+                cartPanel.classList.add('translate-x-full');
+                setTimeout(() => cartModal.classList.add('hidden'), 300);
+            }
+            function openProfileModal() {
+                profileModal.classList.remove('hidden');
+                renderPreviousOrders(); // Render orders every time modal is opened
+                setTimeout(() => profilePanel.classList.remove('translate-x-full'), 10);
+            }
+            function closeProfileModal() {
+                profilePanel.classList.add('translate-x-full');
+                setTimeout(() => profileModal.classList.add('hidden'), 300);
+            }
+            function openCheckoutModal() {
+                closeCartModal();
+                checkoutModal.classList.remove('hidden');
+            }
+            function closeCheckoutModal() {
+                checkoutModal.classList.add('hidden');
+            }
+            function openConfirmationModal() {
+                closeCheckoutModal();
+                confirmationModal.classList.remove('hidden');
+                console.log("Order Placed!");
+            }
+            function closeConfirmationModal() {
+                confirmationModal.classList.add('hidden');
+                cart = [];
+                updateCart();
+            }
+
+            // --- Event Listeners ---
+            menuContainer.addEventListener('click', e => {
+                if (e.target.classList.contains('add-to-cart-btn')) {
+                    const itemId = parseInt(e.target.dataset.id);
+                    addToCart(itemId);
+                    openCartModal();
+                }
+            });
+            cartBody.addEventListener('click', e => {
+                const itemId = parseInt(e.target.dataset.id);
+                if (e.target.classList.contains('quantity-increase')) {
+                    adjustQuantity(itemId, 1);
+                }
+                if (e.target.classList.contains('quantity-decrease')) {
+                    adjustQuantity(itemId, -1);
+                }
+                if (e.target.classList.contains('remove-item')) {
+                    removeFromCart(itemId);
+                }
+            });
+            cartButton.addEventListener('click', openCartModal);
+            profileButton.addEventListener('click', openProfileModal);
+            closeCartButton.addEventListener('click', closeCartModal);
+            closeProfileButton.addEventListener('click', closeProfileModal);
+            cartOverlay.addEventListener('click', closeCartModal);
+            checkoutButton.addEventListener('click', () => {
+                if (cart.length > 0) {
+                    openCheckoutModal();
+                }
+            });
+            cancelCheckoutButton.addEventListener('click', closeCheckoutModal);
+            placeOrderButton.addEventListener('click', () => {
+                if (pickupTimeInput.value) {
+                    openConfirmationModal();
+                } else {
+                    showErrorMessage("Please select a pickup time.");
+                }
+            });
+            closeConfirmationButton.addEventListener('click', closeConfirmationModal);
+
+            // --- Initial Load ---
+            renderMenu();
+            updateCart();
+        });
+    </script>
+</body>
+</html>
